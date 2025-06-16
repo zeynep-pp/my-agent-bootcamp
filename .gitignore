@@ -1,0 +1,63 @@
+node_modules/
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Cache ve derleme klasörleri
+.cache/
+.turbo/
+coverage/
+
+# Ortam değişkenleri
+.env
+.env.*
+
+# Log dosyaları
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistem dosyaları
+.DS_Store
+
+# IDE ve editör dosyaları
+.vscode/
+.idea/
+
+# Diğer
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Dependency directories
+node_modules/
+
+# Misc
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+yarn.lock 
