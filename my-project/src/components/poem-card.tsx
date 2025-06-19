@@ -1,103 +1,108 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BookOpen, RefreshCw } from "lucide-react"
+import { useState, useRef, useEffect } from "react";
+import { useChat } from "@ai-sdk/react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+export default function PoemCard() {
+  const [showPoem, setShowPoem] = useState(false);
+  const poemContainerRef = useRef<HTMLDivElement>(null);
 
-export default function Component() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [poem, setPoem] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [prompt] = useState("Write a beautiful short poem about coding and AI")
+  const { messages, append, reload, status } = useChat({
+    api: "/api/chat",
+    onFinish: () => {
+      setShowPoem(true);
+    },
+  });
 
-  const fetchPoem = async () => {
-    setPoem("")
-    setLoading(true)
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            { role: "user", content: prompt },
-          ],
-        }),
-      });
+  const currentPoem =
+    messages.find((m) => m.role === "assistant")?.content || "";
 
-      if(!response.ok) {
-        throw new Error("Failed to fetch poem")
-      }
-      if (!response.body) throw new Error("No response body")
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder("utf-8")
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
+  const isLoading = status === "submitted" || status === "streaming";
 
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split("\n")
-
-        for (const line of lines) {
-          if (line.startsWith("0:")) {
-            const content = line.slice(2)
-            if(content) {
-              setPoem(prev => prev + content)
-            }
-          }
-        }
-      }
-      setLoading(false)
-    } catch (error) {
-      setPoem(`Error fetching poem: ${(error as Error).message}`)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (poemContainerRef.current && currentPoem) {
+      poemContainerRef.current.scrollTop =
+        poemContainerRef.current.scrollHeight;
     }
-  }
+  }, [currentPoem]);
 
-  const handleShowPoem = () => {
-    setIsOpen(true)
-    fetchPoem()
-  }
+  const handleGeneratePoem = async () => {
+    setShowPoem(true);
+    await append({
+      role: "user",
+      content: "Please write me a beautiful poem.",
+    });
+  };
 
-  const handleRegenerate = () => {
-    fetchPoem()
-  }
+  const handleRegeneratePoem = async () => {
+    await reload();
+  };
+
+  const handleHidePoem = () => {
+    setShowPoem(false);
+  };
 
   return (
-    <>
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            Poetry Corner
-          </CardTitle>
-          <CardDescription>Discover beautiful poetry with just one click</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={handleShowPoem} className="w-full">
-            Read a Poem
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>Discover a Poem</CardTitle>
+        <CardDescription>
+          Click the button below to generate a unique poem with AI.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {!showPoem && (
+          <Button
+            onClick={handleGeneratePoem}
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Generating Poem..." : "Generate Poem"}
           </Button>
-        </CardContent>
-      </Card>
-
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>A Beautiful Poem</DialogTitle>
-            <DialogDescription>Enjoy this classic piece of literature</DialogDescription>
-          </DialogHeader>
-          <div className="mt-4 flex flex-col gap-4">
-            <pre className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-foreground min-h-[120px]">{poem || (loading ? "Loading..." : "")}</pre>
-            <Button onClick={handleRegenerate} disabled={loading} variant="outline" className="self-end flex items-center gap-2">
-              <RefreshCw className={loading ? "animate-spin" : ""} size={16} />
-              Regenerate
-            </Button>
+        )}
+        {showPoem && (
+          <div
+            ref={poemContainerRef}
+            className="whitespace-pre-wrap text-sm text-muted-foreground max-h-60 overflow-y-auto p-2 border rounded-md scroll-smooth"
+          >
+            {currentPoem}
+            {isLoading && (
+              <div className="text-center text-xs text-gray-500 mt-2">
+                ✨ Creating your poem...
+              </div>
+            )}
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  )
+        )}
+      </CardContent>
+      {showPoem && (
+        <CardFooter className="space-x-2">
+          <Button
+            onClick={handleRegeneratePoem}
+            variant="outline"
+            className="flex-1"
+            disabled={isLoading}
+          >
+            {isLoading ? "Regenerating..." : "Regenerate"}
+          </Button>
+          <Button
+            onClick={handleHidePoem}
+            variant="outline"
+            className="flex-1"
+            disabled={isLoading}
+          >
+            Hide Poem
+          </Button>
+        </CardFooter>
+      )}
+    </Card>
+  );
 }
