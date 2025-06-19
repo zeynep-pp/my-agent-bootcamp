@@ -1,4 +1,4 @@
-import Component from "./poem-card"
+import Component from "../components/poem-card"
 
 export default function Page() {
   return (
