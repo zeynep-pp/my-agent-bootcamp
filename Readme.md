@@ -223,20 +223,13 @@ pnpm run dev
 
 ---
 
-## 👨‍💻 Author
-
-**Dinesh Babu Satram**  
-Let’s build agents that create magic ✨  
-[GitHub](https://github.com/Dinesh-Satram)
-
----
-
 ## 🛡️ License
 
 This project is licensed under the MIT License.
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+---
 ## Getting Started
 
 First, run the development server:
